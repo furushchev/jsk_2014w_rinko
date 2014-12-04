@@ -1,0 +1,25 @@
+<launch>
+  <!-- <node name="psmove_driver" -->
+  <!--       pkg="jsk_2014w_rinko" type="psmove_driver" -->
+  <!--       output="screen"> -->
+  <!-- </node> -->
+
+  <node name="psmove_tracker"
+        pkg="jsk_2014w_rinko" type="psmove_tracker"
+        output="screen">
+  </node>
+
+  <node name="psmove_tf_publisher"
+        pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l">
+  </node>
+</launch>
+
+
+
+
+
+
+
+
+
+
