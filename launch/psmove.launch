@@ -29,8 +29,8 @@
              if="$(arg launch_openni)" />
 
     <node name="pr2_psmove_controller"
-          pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l">
-    </node>
+          pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l"
+          output="screen" />
   </group>
 
   <group if="$(arg use_oculus)">
