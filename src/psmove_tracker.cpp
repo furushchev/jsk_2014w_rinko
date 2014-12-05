@@ -282,11 +282,12 @@ public:
 #endif
 
     // publish pose
+    float intensity = 0.1;
     geometry_msgs::PoseStamped pose;
-    pose.header.frame_id = "map";
-    pose.pose.position.x = pos.x;
-    pose.pose.position.y = pos.y;
-    pose.pose.position.z = pos.z;
+    pose.header.frame_id = "base_footprint";
+    pose.pose.position.x = pos.z * -intensity;
+    pose.pose.position.y = pos.x * intensity;
+    pose.pose.position.z = pos.y * intensity;
     if(has_orientation){
       pose.pose.orientation.x = qx;
       pose.pose.orientation.y = qy;
@@ -310,9 +311,7 @@ std::vector<unsigned char> get_button_chars(PSMove* move){
     if(b & Btn_MOVE) ret.push_back('m');
     if(b & Btn_T) ret.push_back('l');
     return ret;
-  }
-
-
+}
 
 int main(int argc, char** argv)
 {
