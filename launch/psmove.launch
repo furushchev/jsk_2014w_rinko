@@ -7,6 +7,10 @@
   <node name="psmove_tracker"
         pkg="jsk_2014w_rinko" type="psmove_tracker"
         output="screen">
+    <remap from="image" to="/usb_cam/image_raw" />
+    <param name="color_r" value="255" />
+    <param name="color_b" value="255" />
+    <param name="radius_smoothing_threshold" value="5" />
   </node>
 
   <node name="psmove_tf_publisher"

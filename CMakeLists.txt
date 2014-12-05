@@ -10,6 +10,10 @@ find_package(catkin REQUIRED COMPONENTS
   pr2eus
   rospy
   tf2_py
+  cv_bridge
+  message_generation
+  std_msgs
+  geometry_msgs
 )
 
 find_package(OpenCV REQUIRED)
@@ -30,10 +34,19 @@ include(FindPackageHandleStandardArgs)
 find_package_handle_standard_args(PSMOVEAPI DEFAULT_MSG PSMOVEAPI_LIBRARY PSMOVEAPI_INCLUDE_DIR)
 mark_as_advanced(PSMOVEAPI_INCLUDE_DIR PSMOVEAPI_LIBRARY)
 
+add_message_files(
+  FILES PSMoveButton.msg
+)
+
+generate_messages(
+  DEPENDENCIES std_msgs
+  )
+
+
 catkin_package(
 #  INCLUDE_DIRS include
 #  LIBRARIES 2014w_rinko
-#  CATKIN_DEPENDS actionlib oculus_rviz_plugins pr2eus rospy tf2
+#  CATKIN_DEPENDS actionlib oculus_rviz_plugins pr2eus rospy tf2 std_msgs message_runtime
 #  DEPENDS system_lib
 )
 # include_directories(include)
@@ -70,7 +83,9 @@ target_link_libraries(psmove_tracker
   ${PSMOVEAPI_LIBRARIES}
   /usr/lib/x86_64-linux-gnu/libpsmoveapi_tracker.so
   ${OpenCV_LIBRARIES}
+  /usr/lib
 )
+
 
 
 #############
