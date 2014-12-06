@@ -16,6 +16,7 @@
 
 (setq *move* nil)
 (setq *initial-move* nil)
+(setq *rot-val* 0.0f)
 
 (defun ros::point->float-vector (point)
   (float-vector (* (send point :x) 1000.0)
@@ -36,7 +37,7 @@
             :pos (ros::point->float-vector (send msg :pose :position))
             :rot (ros::quaternion->matrix (send msg :pose :orientation))))
         (base->arm (send *tfl* :lookup-transform "/base_footprint" "/torso_lift_link" (ros::time 0)))
-        (diff-c (arrow))
+        (diff-c (make-cube 40 40 40))
         (av-time 500)
         initial->current)
     (if (not base->arm) (return-from p-cb nil))
@@ -47,21 +48,24 @@
 
 ;;    (send diff-c :transform (send (send *initial-pose* :copy-worldcoords) :transformation c))
     (send diff-c :translate (send base->arm :pos) :world)
-    (send diff-c :translate (float-vector 800 0 100) :world)
+    (send diff-c :translate (float-vector 1000 0 100) :world)
     (send diff-c :translate (send c :pos) :world)
-    (send diff-c :rotate (send c :rpy) :world)
-    (ros::ros-info "psmove: ~A" c)
-    (ros::ros-info "base->arm: ~A" (send base->arm :pos))
-    (ros::ros-info "diff-c: ~A" diff-c)
-    (ros::publish "/psmove_marker" (object->marker-msg diff-c
+    (send diff-c :rotate (deg2rad *rot-val*) :z)
+;;    (send diff-c :rotate (send c :rot) :world)
+;;    (ros::ros-info "psmove: ~A" c)
+;;    (ros::ros-info "base->arm: ~A" (send base->arm :pos))
+;;    (ros::ros-info "diff-c: ~A" diff-c)
+    (ros::publish "/psmove_marker" (cube->marker-msg diff-c
                                                      (instance std_msgs::header :init
                                                                :stamp (ros::time-now)
                                                                :frame_id "/base_footprint")
                                                      :color (float-vector 0 1 0)
                                                      :lifetime 300))
     (when *move*
-      (send *pr2* :larm :inverse-kinematics diff-c :rotation-axis :z)
-      (send *ri* :larm-angle-vector (send *pr2* :angle-vector) 500)
+      (send *pr2* :larm :inverse-kinematics diff-c
+            :rotation-axis :x
+            :stop 10)
+      (send *ri* :larm-angle-vector (send *pr2* :angle-vector) av-time)
 ;;      (send *ri* :wait-interpolation))
       )
     ))
@@ -79,13 +83,20 @@
     (when (substringp "t" b-str)
       (send *ri* :start-grasp :larm))
     (when (substringp "c" b-str)
-      (send *ri* :stop-grasp :larm))))
+      (send *ri* :stop-grasp :larm))
+    (when (substringp "x" b-str)
+      (send *pr2* :larm :wrist-r :joint-angle (+ (send *pr2* :larm :wrist-r :joint-angle)
+                                                 50))
+      (send *ri* :larm-angle-vector (send *pr2* :angle-vector) 500))
+    (when (substringp "s" b-str)
+      (setq *rot-val* (- *rot-val* 15)))
+))
 
 (ros::subscribe "/psmove" geometry_msgs::PoseStamped #'p-cb)
 (ros::subscribe "/psmove_button" jsk_2014w_rinko::PSMoveButton #'b-cb)
 (ros::advertise "/psmove_marker" visualization_msgs::Marker 5)
 
-(ros::rate 100)
+(ros::rate 15)
 
 (while (ros::ok)
   (ros::spin-once)

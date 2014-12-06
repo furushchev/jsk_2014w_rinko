@@ -4,10 +4,10 @@
   <!--       output="screen"> -->
   <!-- </node> -->
 
-  <arg name="use_oculus" default="false" />
+  <arg name="use_oculus" default="true" />
   <arg name="use_psmove" default="true" />
   <arg name="use_kalman_filter" default="true" />
-  <arg name="launch_rviz" default="false" />
+  <arg name="launch_rviz" default="true" />
   <arg name="launch_usbcam" default="false" />
   <arg name="launch_openni" default="true" />
   <arg name="image" default="/camera/rgb/image_rect_color" />
@@ -19,10 +19,10 @@
           >
       <remap from="image" to="$(arg image)" />
       <remap from="psmove" to="psmove_unfiltered" if="$(arg use_kalman_filter)" />
-      <param name="debug" value="true" />
+      <param name="debug" value="false" />
       <param name="color_r" value="255" />
       <param name="color_b" value="255" />
-      <param name="color_threshold" value="20" />
+      <param name="color_threshold" value="10" />
       <param name="lpf_threshold" value="1" />
       <param name="min_radius" value="5" />
       <param name="max_radius" value="140" />
@@ -31,7 +31,7 @@
     <node name="psmove_kalman_filter"
           pkg="jsk_2014w_rinko" type="linear_3d_kalman_filter"
           if="$(arg use_kalman_filter)"
-          output="screen">
+          >
       <remap from="pose" to="psmove_unfiltered" />
       <remap from="pose_filtered" to="psmove" />
     </node>
@@ -44,12 +44,12 @@
 
     <node name="pr2_psmove_controller"
           pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l"
-          output="screen" />
+          />
   </group>
 
   <group if="$(arg use_oculus)">
     <node name="rviz" pkg="rviz" type="rviz"
-          args="-d $(find jsk_2014w_rinko)/config/oculus_rviz_config.rviz"
+          args="-d $(find jsk_2014w_rinko)/cfg/oculus_rviz_config.rviz"
           if="$(arg launch_rviz)" />
     <node name="pr2_oculus_controller"
           pkg="jsk_2014w_rinko" type="pr2_oculus_controller.l" />
