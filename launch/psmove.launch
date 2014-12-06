@@ -7,9 +7,9 @@
   <arg name="use_oculus" default="false" />
   <arg name="use_psmove" default="true" />
   <arg name="launch_rviz" default="false" />
-  <arg name="launch_usbcam" default="true" />
-  <arg name="launch_openni" default="false" />
-  <arg name="image" default="/usb_cam/image_raw" />
+  <arg name="launch_usbcam" default="false" />
+  <arg name="launch_openni" default="true" />
+  <arg name="image" default="/camera/rgb/image_rect_color" />
 
 
   <group if="$(arg use_psmove)">
@@ -17,9 +17,13 @@
           pkg="jsk_2014w_rinko" type="psmove_tracker"
           output="screen">
       <remap from="image" to="$(arg image)" />
+      <param name="debug" value="true" />
       <param name="color_r" value="255" />
       <param name="color_b" value="255" />
+      <param name="color_threshold" value="20" />
       <param name="radius_smoothing_threshold" value="5" />
+      <param name="min_radius" value="5" />
+      <param name="max_radius" value="140" />
     </node>
 
     <node name="usb_cam"
@@ -42,13 +46,3 @@
   </group>
 
 </launch>
-
-
-
-
-
-
-
-
-
-

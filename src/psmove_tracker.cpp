@@ -24,7 +24,6 @@
 #define PSEYE_FOV_RED_DOT 56
 
 #define NIL (-1)
-#define DEBUG
 
 float qx = 0.f, qy = 0.f, qz = 0.f, qw = 0.f;
 bool has_orientation = false;
@@ -148,8 +147,13 @@ class PSMoveTracker {
   bool force_not_roi_;
 
   fusion* fusion_;
-  bool fusion_alloced;
+  bool fusion_alloced_;
   double z_near_, z_far_;
+
+  int min_radius_, max_radius_;
+  int canny_threshold_, center_detection_threshold_;
+
+  bool debug_;
 
 public:
   ros::NodeHandle nh;
@@ -170,6 +174,11 @@ public:
     nh_.param<int>("radius_smoothing_threshold", radius_smoothing_threshold_, 5);
     nh_.param<int>("roi_margin_2", roi_margin_2_, 50);
 
+    nh_.param<int>("min_radius", min_radius_, 5);
+    nh_.param<int>("max_radius", max_radius_, 150);
+    nh_.param<int>("canny_threshold", canny_threshold_, 200);
+    nh_.param<int>("center_detection_threshold", center_detection_threshold_, 40);
+
     prev_radius_ = new buffered_vector(radius_smoothing_threshold_);
     prev_centroid_x_ = new buffered_vector(radius_smoothing_threshold_);
     prev_centroid_y_ = new buffered_vector(radius_smoothing_threshold_);
@@ -177,7 +186,9 @@ public:
     nh_.param<double>("z_near", z_near_, 1.);
     nh_.param<double>("z_far", z_far_, 1000.);
 
-    fusion_alloced = false;
+    nh_.param<bool>("debug", debug_, false);
+
+    fusion_alloced_ = false;
 
     pub_ = nh.advertise<geometry_msgs::PoseStamped>("psmove", 1000);
     sub_ = nh.subscribe("image", 1, &PSMoveTracker::imageCallback, this);
@@ -191,9 +202,9 @@ public:
   };
 
   void imageCallback(const sensor_msgs::ImageConstPtr& msg){
-    if(!fusion_alloced){
+    if(!fusion_alloced_){
       fusion_ = new fusion(msg->width, msg->height, z_near_, z_far_);
-      fusion_alloced = true;
+      fusion_alloced_ = true;
     }
 
     cv_bridge::CvImageConstPtr cvimg = cv_bridge::toCvShare(msg);
@@ -222,9 +233,8 @@ public:
 
       roi_image = frame(roi_rect);
 
-#ifdef DEBUG
-      ROS_INFO_STREAM("roi x: " << roi_rect.x << " y: " << roi_rect.y << " w: " << roi_rect.width << " h: " << roi_rect.height);
-#endif
+      if (debug_)
+        ROS_INFO_STREAM("roi x: " << roi_rect.x << " y: " << roi_rect.y << " w: " << roi_rect.width << " h: " << roi_rect.height);
     }
 
     // color filter
@@ -233,15 +243,16 @@ public:
 
     // circle detection
     std::vector<cv::Vec3f> circles;
-    cv::HoughCircles(filtered, circles, CV_HOUGH_GRADIENT, 2, roi_image.rows / 4, 200, 40, 5, 200);
+    cv::HoughCircles(filtered, circles, CV_HOUGH_GRADIENT, 2, roi_image.rows / 4,
+                     canny_threshold_, center_detection_threshold_,
+                     min_radius_, max_radius_);
 
     float cent_x, cent_y;
     if (circles.size() <= 0) {
-//#ifdef DEBUG
-      ROS_INFO_STREAM("no circle detected.");
-//#endif
-        force_not_roi_ = true;
-        return;
+      if (debug_) ROS_INFO_STREAM("no circle detected.");
+
+      force_not_roi_ = true;
+      return;
     }
 
     float max_radius = 0.0f;
@@ -267,19 +278,17 @@ public:
     float avg_radius = prev_radius_->average();
     float avg_cent_x = prev_centroid_x_->average();
     float avg_cent_y = prev_centroid_y_->average();
-#ifdef DEBUG
-    ROS_INFO_STREAM("x: " << avg_cent_x << " y: " << avg_cent_y << " r: " << avg_radius);
-    cv::Mat frame_copy = frame.clone();
-    cv::circle( frame_copy, cv::Point(avg_cent_x, avg_cent_y), avg_radius, cv::Scalar(0, 0, 255), 3, 8, 0);
-    cv::imshow("debug1", filtered);
-    cv::imshow("debug2", frame_copy);
-    cvWaitKey(1);
-#endif
+    if (debug_){
+      ROS_INFO_STREAM("x: " << avg_cent_x << " y: " << avg_cent_y << " r: " << avg_radius);
+      cv::Mat frame_copy = frame.clone();
+      cv::circle( frame_copy, cv::Point(avg_cent_x, avg_cent_y), avg_radius, cv::Scalar(0, 0, 255), 3, 8, 0);
+      cv::imshow("debug1", filtered);
+      cv::imshow("debug2", frame_copy);
+      cvWaitKey(1);
+    }
 
     cv::Point3f pos = fusion_->get_position(avg_cent_x, avg_cent_y, avg_radius);
-#ifdef DEBUG
-    ROS_INFO_STREAM("pos x: " << pos.x << " y: " << pos.y << " z: " << pos.z);
-#endif
+    if (debug_) ROS_INFO_STREAM("pos x: " << pos.x << " y: " << pos.y << " z: " << pos.z);
 
     // publish pose
     float intensity = 0.1;
@@ -299,18 +308,18 @@ public:
 };
 
 std::vector<unsigned char> get_button_chars(PSMove* move){
-    unsigned int b = psmove_get_buttons(move);
-    std::vector<unsigned char> ret;
-    if(b & Btn_PS) ret.push_back('p');
-    if(b & Btn_TRIANGLE) ret.push_back('t');
-    if(b & Btn_CIRCLE) ret.push_back('c');
-    if(b & Btn_CROSS) ret.push_back('x');
-    if(b & Btn_SQUARE) ret.push_back('s');
-    if(b & Btn_SELECT) ret.push_back('0');
-    if(b & Btn_START) ret.push_back('1');
-    if(b & Btn_MOVE) ret.push_back('m');
-    if(b & Btn_T) ret.push_back('l');
-    return ret;
+  unsigned int b = psmove_get_buttons(move);
+  std::vector<unsigned char> ret;
+  if(b & Btn_PS) ret.push_back('p');
+  if(b & Btn_TRIANGLE) ret.push_back('t');
+  if(b & Btn_CIRCLE) ret.push_back('c');
+  if(b & Btn_CROSS) ret.push_back('x');
+  if(b & Btn_SQUARE) ret.push_back('s');
+  if(b & Btn_SELECT) ret.push_back('0');
+  if(b & Btn_START) ret.push_back('1');
+  if(b & Btn_MOVE) ret.push_back('m');
+  if(b & Btn_T) ret.push_back('l');
+  return ret;
 }
 
 int main(int argc, char** argv)
@@ -368,9 +377,9 @@ int main(int argc, char** argv)
         btn_msg.button = btn;
         btn_msg.trigger = trigger_val / 255.0f;
         btn_pub.publish(btn_msg);
-  } catch (...) {
-    ROS_WARN_STREAM("failed to publish button");
-  }
+      } catch (...) {
+        ROS_WARN_STREAM("failed to publish button");
+      }
 
     } else {
 //      ROS_WARN_STREAM("failed ay psmove_poll");
