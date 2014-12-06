@@ -29,7 +29,7 @@
     </node>
 
     <node name="psmove_kalman_filter"
-          pkg="jsk_2014w_rinko" type="linear_2d_kalman_filter"
+          pkg="jsk_2014w_rinko" type="linear_3d_kalman_filter"
           if="$(arg use_kalman_filter)"
           output="screen">
       <remap from="pose" to="psmove_unfiltered" />

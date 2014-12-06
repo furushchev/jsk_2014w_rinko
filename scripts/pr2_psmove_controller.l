@@ -6,6 +6,7 @@
 (ros::roseus "pr2_psmove_controller")
 
 (require :pr2-interface "package://pr2eus/pr2-interface.l")
+(load "models/arrow-object.l")
 
 (pr2-init)
 
@@ -35,7 +36,7 @@
             :pos (ros::point->float-vector (send msg :pose :position))
             :rot (ros::quaternion->matrix (send msg :pose :orientation))))
         (base->arm (send *tfl* :lookup-transform "/base_footprint" "/torso_lift_link" (ros::time 0)))
-        (diff-c (make-cube 100 100 100))
+        (diff-c (arrow))
         (av-time 500)
         initial->current)
     (if (not base->arm) (return-from p-cb nil))
@@ -48,11 +49,11 @@
     (send diff-c :translate (send base->arm :pos) :world)
     (send diff-c :translate (float-vector 800 0 100) :world)
     (send diff-c :translate (send c :pos) :world)
-;;    (send diff-c :rotate (send c :rpy) :world)
+    (send diff-c :rotate (send c :rpy) :world)
     (ros::ros-info "psmove: ~A" c)
     (ros::ros-info "base->arm: ~A" (send base->arm :pos))
     (ros::ros-info "diff-c: ~A" diff-c)
-    (ros::publish "/psmove_marker" (cube->marker-msg diff-c
+    (ros::publish "/psmove_marker" (object->marker-msg diff-c
                                                      (instance std_msgs::header :init
                                                                :stamp (ros::time-now)
                                                                :frame_id "/base_footprint")
