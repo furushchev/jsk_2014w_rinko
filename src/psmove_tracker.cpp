@@ -43,7 +43,7 @@ public:
     data[p] = v;
     p++;
     if (p >= n_) p = 0;
-    if (length < 3) length++;
+    if (length < n_) length++;
   }
   float average(){
     if (length <= 0) return 0.f;
@@ -137,10 +137,9 @@ class PSMoveTracker {
   int color_b_min_, color_b_max_;
 
   int color_threshold_;
-  int radius_smoothing_threshold_;
+  int lpf_threshold_;
   int roi_margin_2_;
 
-  cv::Point2f prev_centroid_;
   buffered_vector* prev_radius_;
   buffered_vector* prev_centroid_x_;
   buffered_vector* prev_centroid_y_;
@@ -159,7 +158,7 @@ public:
   ros::NodeHandle nh;
   int color_r, color_g, color_b;
 
-  PSMoveTracker(): nh(), nh_("~"), prev_centroid_(0.f, 0.f), force_not_roi_(false){
+  PSMoveTracker(): nh(), nh_("~"), force_not_roi_(false){
     nh_.param<int>("color_r", color_r, NIL);
     nh_.param<int>("color_g", color_g, NIL);
     nh_.param<int>("color_b", color_b, NIL);
@@ -171,7 +170,7 @@ public:
     min_max_color(color_g, color_threshold_, color_g_min_, color_g_max_);
     min_max_color(color_b, color_threshold_, color_b_min_, color_b_max_);
 
-    nh_.param<int>("radius_smoothing_threshold", radius_smoothing_threshold_, 5);
+    nh_.param<int>("lpf_threshold", lpf_threshold_, 5);
     nh_.param<int>("roi_margin_2", roi_margin_2_, 50);
 
     nh_.param<int>("min_radius", min_radius_, 5);
@@ -179,9 +178,9 @@ public:
     nh_.param<int>("canny_threshold", canny_threshold_, 200);
     nh_.param<int>("center_detection_threshold", center_detection_threshold_, 40);
 
-    prev_radius_ = new buffered_vector(radius_smoothing_threshold_);
-    prev_centroid_x_ = new buffered_vector(radius_smoothing_threshold_);
-    prev_centroid_y_ = new buffered_vector(radius_smoothing_threshold_);
+    prev_radius_ = new buffered_vector(lpf_threshold_);
+    prev_centroid_x_ = new buffered_vector(lpf_threshold_);
+    prev_centroid_y_ = new buffered_vector(lpf_threshold_);
 
     nh_.param<double>("z_near", z_near_, 1.);
     nh_.param<double>("z_far", z_far_, 1000.);
@@ -222,8 +221,8 @@ public:
       // set roi
       is_roi = true;
       int roi_rect_window_2 = prev_radius_->latest() + roi_margin_2_;
-      roi_rect = cv::Rect(prev_centroid_.x - roi_rect_window_2,
-                          prev_centroid_.y - roi_rect_window_2,
+      roi_rect = cv::Rect(prev_centroid_x_->latest() - roi_rect_window_2,
+                          prev_centroid_y_->latest() - roi_rect_window_2,
                           cv::min(roi_rect_window_2 * 2, frame.size().width),
                           cv::min(roi_rect_window_2 * 2, frame.size().height));
       if (roi_rect.x < 0) roi_rect.x = 0;
@@ -268,9 +267,6 @@ public:
       cent_x += roi_rect.x;
       cent_y += roi_rect.y;
     }
-    prev_centroid_.x = cent_x;
-    prev_centroid_.y = cent_y;
-
     prev_radius_->insert(max_radius);
     prev_centroid_x_->insert(cent_x);
     prev_centroid_y_->insert(cent_y);

@@ -65,6 +65,7 @@ include_directories(
 ## Declare a cpp executable
 add_executable(psmove_driver src/psmove_driver.cpp)
 add_executable(psmove_tracker src/psmove_tracker.cpp)
+add_executable(linear_2d_kalman_filter src/linear_kalman_filter.cpp)
 
 ## Add cmake target dependencies of the executable/library
 ## as an example, message headers may need to be generated before nodes
@@ -87,6 +88,10 @@ target_link_libraries(psmove_tracker
 )
 
 
+target_link_libraries(linear_2d_kalman_filter
+  ${catkin_LIBRARIES}
+  ${OpenCV_LIBRARIES}
+)
 
 #############
 ## Install ##

@@ -6,6 +6,7 @@
 
   <arg name="use_oculus" default="false" />
   <arg name="use_psmove" default="true" />
+  <arg name="use_kalman_filter" default="true" />
   <arg name="launch_rviz" default="false" />
   <arg name="launch_usbcam" default="false" />
   <arg name="launch_openni" default="true" />
@@ -15,15 +16,24 @@
   <group if="$(arg use_psmove)">
     <node name="psmove_tracker"
           pkg="jsk_2014w_rinko" type="psmove_tracker"
-          output="screen">
+          >
       <remap from="image" to="$(arg image)" />
+      <remap from="psmove" to="psmove_unfiltered" if="$(arg use_kalman_filter)" />
       <param name="debug" value="true" />
       <param name="color_r" value="255" />
       <param name="color_b" value="255" />
       <param name="color_threshold" value="20" />
-      <param name="radius_smoothing_threshold" value="5" />
+      <param name="lpf_threshold" value="1" />
       <param name="min_radius" value="5" />
       <param name="max_radius" value="140" />
+    </node>
+
+    <node name="psmove_kalman_filter"
+          pkg="jsk_2014w_rinko" type="linear_2d_kalman_filter"
+          if="$(arg use_kalman_filter)"
+          output="screen">
+      <remap from="pose" to="psmove_unfiltered" />
+      <remap from="pose_filtered" to="psmove" />
     </node>
 
     <node name="usb_cam"
