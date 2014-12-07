@@ -1,7 +1,7 @@
 <launch>
 
   <include file="$(find jsk_data)/launch/pr2_record.launch">
-    <arg name="other_topics" value=""/>
+    <arg name="other_topics" value="/gaze"/>
     <arg name="other_options" value=""/>
 
     <!-- for PR2 -->

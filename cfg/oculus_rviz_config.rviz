@@ -15,7 +15,6 @@ Panels:
         - /MarkerArray1
         - /LaserScan1
         - /OculusDisplay1
-        - /OculusDisplay1/Status1
         - /Pose1
         - /Marker1
       Splitter Ratio: 0.711409
@@ -38,7 +37,7 @@ Panels:
     Experimental: false
     Name: Time
     SyncMode: 0
-    SyncSource: ""
+    SyncSource: PointCloud2
 Visualization Manager:
   Class: ""
   Displays:
@@ -613,7 +612,7 @@ Visualization Manager:
       Color: 255; 255; 255
       Color Transformer: RGB8
       Decay Time: 0
-      Enabled: false
+      Enabled: true
       Invert Rainbow: false
       Max Color: 255; 255; 255
       Max Intensity: 4096
@@ -626,10 +625,10 @@ Visualization Manager:
       Size (Pixels): 3
       Size (m): 0.01
       Style: Flat Squares
-      Topic: /openni_c2/depth_registered/points
+      Topic: /openni_c2/depth_registered_half/points
       Use Fixed Frame: true
       Use rainbow: true
-      Value: false
+      Value: true
     - Class: rviz/MarkerArray
       Enabled: false
       Marker Topic: /robot_interface_marker_array
@@ -685,9 +684,9 @@ Visualization Manager:
       Name: OculusDisplay
       Near Clip Distance: 0.02
       Offset:
-        X: 0
+        X: 0.2
         Y: 0
-        Z: 0
+        Z: 1.3
       Publish tf: true
       Render to Oculus: true
       Target Frame: base_footprint

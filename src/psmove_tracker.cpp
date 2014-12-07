@@ -152,6 +152,8 @@ class PSMoveTracker {
   int min_radius_, max_radius_;
   int canny_threshold_, center_detection_threshold_;
 
+  std::string base_frame_id_;
+
   bool debug_;
 
 public:
@@ -184,6 +186,8 @@ public:
 
     nh_.param<double>("z_near", z_near_, 1.);
     nh_.param<double>("z_far", z_far_, 1000.);
+
+    nh_.param<std::string>("base_frame_id", base_frame_id_, "base_footprint");
 
     nh_.param<bool>("debug", debug_, false);
 
@@ -289,7 +293,8 @@ public:
     // publish pose
     float intensity = 0.1;
     geometry_msgs::PoseStamped pose;
-    pose.header.frame_id = "base_footprint";
+    pose.header.stamp = ros::Time::now();
+    pose.header.frame_id = base_frame_id_;
     pose.pose.position.x = pos.z * -intensity;
     pose.pose.position.y = pos.x * intensity;
     pose.pose.position.z = pos.y * intensity;

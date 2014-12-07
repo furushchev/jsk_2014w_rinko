@@ -1,0 +1,44 @@
+<launch>
+  <arg name="record" default="false" />
+
+  <node name="psmove_tracker"
+        pkg="jsk_2014w_rinko" type="psmove_tracker">
+    <remap from="image" to="/camera/rgb/image_rect_color" />
+    <remap from="psmove" to="psmove_unfiltered" />
+    <param name="base_frame_id" value="map" />
+    <param name="debug" value="true" />
+    <param name="color_r" value="255" />
+    <param name="color_b" value="255" />
+    <param name="color_threshold" value="5" />
+    <param name="lpf_threshold" value="1" />
+    <param name="min_radius" value="5" />
+    <param name="max_radius" value="140" />
+  </node>
+
+  <node name="psmove_kalman_filter"
+        pkg="jsk_2014w_rinko" type="linear_3d_kalman_filter">
+    <remap from="pose" to="psmove_unfiltered" />
+    <remap from="pose_filtered" to="psmove" />
+  </node>
+
+  <include file="$(find openni_launch)/launch/openni.launch" />
+
+  <node name="publish_trajectory"
+        pkg="jsk_2014w_rinko" type="psmove_trajectory.l">
+    <param name="multiplier" value="2.0" />
+  </node>
+  <node name="map_tf_publisher"
+        pkg="tf" type="static_transform_publisher"
+        args="0 0 0 0 0 0 /map /camera_link 100"/>
+  <node name="rviz"
+        pkg="rviz" type="rviz"
+        args="-d $(find jsk_2014w_rinko)/cfg/psmove_trajectory_config.rviz" />
+
+  <include file="$(find jsk_data)/launch/common_record.launch"
+           if="$(arg record)">
+    <arg name="other_topics" value="/psmove /psmove_trajectory /psmove_trajectory_current /psmove_unfiltered" />
+    <arg name="save_openni" value="true" />
+    <arg name="camera_namespace" value="camera" />
+    <arg name="save_dir" value="$(find jsk_2014w_rinko)/" />
+  </include>
+</launch>

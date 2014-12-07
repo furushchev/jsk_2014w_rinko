@@ -22,7 +22,7 @@
       <param name="debug" value="false" />
       <param name="color_r" value="255" />
       <param name="color_b" value="255" />
-      <param name="color_threshold" value="10" />
+      <param name="color_threshold" value="5" />
       <param name="lpf_threshold" value="1" />
       <param name="min_radius" value="5" />
       <param name="max_radius" value="140" />
@@ -44,7 +44,10 @@
 
     <node name="pr2_psmove_controller"
           pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l"
-          />
+          >
+      <param name="multiplier" value="1.3" />
+      <param name="z_far" value="1.2" />
+    </node>
   </group>
 
   <group if="$(arg use_oculus)">

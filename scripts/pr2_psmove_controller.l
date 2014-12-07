@@ -17,11 +17,13 @@
 (setq *move* nil)
 (setq *initial-move* nil)
 (setq *rot-val* 0.0f)
+(setq *multiplier* (ros::get-param "~multiplier" 1.0f))
+(setq *z-far* (ros::get-param "~z_far" 1.2f))
 
 (defun ros::point->float-vector (point)
-  (float-vector (* (send point :x) 1000.0)
-                (* (send point :y) 1000.0)
-                (* (send point :z) 1000.0)))
+  (float-vector (* (send point :x) 1000.0 *multiplier*)
+                (* (send point :y) 1000.0 *multiplier*)
+                (* (send point :z) 1000.0 *multiplier*)))
 
 (defun ros::quaternion->matrix (quaternion)
   (user::quaternion2matrix
@@ -48,7 +50,7 @@
 
 ;;    (send diff-c :transform (send (send *initial-pose* :copy-worldcoords) :transformation c))
     (send diff-c :translate (send base->arm :pos) :world)
-    (send diff-c :translate (float-vector 1000 0 100) :world)
+    (send diff-c :translate (float-vector (* *z-far* 1000) 0 0) :world)
     (send diff-c :translate (send c :pos) :world)
     (send diff-c :rotate (deg2rad *rot-val*) :z)
 ;;    (send diff-c :rotate (send c :rot) :world)
