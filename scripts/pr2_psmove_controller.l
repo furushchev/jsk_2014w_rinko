@@ -18,6 +18,7 @@
 (setq *initial-move* nil)
 (setq *rot-val* 0.0f)
 (setq *multiplier* (ros::get-param "~multiplier" 1.0f))
+(setq *base-frame-id* (ros::get-param "~base_frame_id" "/base_footprint"))
 (setq *z-far* (ros::get-param "~z_far" 1.2f))
 
 (defun ros::point->float-vector (point)
@@ -38,11 +39,12 @@
   (let ((c (make-coords
             :pos (ros::point->float-vector (send msg :pose :position))
             :rot (ros::quaternion->matrix (send msg :pose :orientation))))
-        (base->arm (send *tfl* :lookup-transform "/base_footprint" "/torso_lift_link" (ros::time 0)))
+        (base->arm (send *tfl* :lookup-transform *base-frame-id* "/torso_lift_link" (ros::time 0)))
         (diff-c (make-cube 40 40 40))
-        (av-time 500)
-        initial->current)
-    (if (not base->arm) (return-from p-cb nil))
+        (av-time 500))
+
+    (if (not base->arm)
+        (setq base->arm (make-coords :pos (float-vector 0 0 1300))))
 
     (when *initial-move*
       (setq av-time 3000)
@@ -57,12 +59,11 @@
 ;;    (ros::ros-info "psmove: ~A" c)
 ;;    (ros::ros-info "base->arm: ~A" (send base->arm :pos))
 ;;    (ros::ros-info "diff-c: ~A" diff-c)
-    (ros::publish "/psmove_marker" (cube->marker-msg diff-c
-                                                     (instance std_msgs::header :init
+    (ros::publish "/psmove_marker" (instance geometry_msgs::PoseStamped :init
+                                             :header (instance std_msgs::header :init
                                                                :stamp (ros::time-now)
-                                                               :frame_id "/base_footprint")
-                                                     :color (float-vector 0 1 0)
-                                                     :lifetime 300))
+                                                               :frame_id *base-frame-id*)
+                                             :pose (ros::coords->tf-pose diff-c)))
     (when *move*
       (send *pr2* :larm :inverse-kinematics diff-c
             :rotation-axis :x
@@ -96,7 +97,7 @@
 
 (ros::subscribe "/psmove" geometry_msgs::PoseStamped #'p-cb)
 (ros::subscribe "/psmove_button" jsk_2014w_rinko::PSMoveButton #'b-cb)
-(ros::advertise "/psmove_marker" visualization_msgs::Marker 5)
+(ros::advertise "/psmove_marker" geometry_msgs::PoseStamped 1)
 
 (ros::rate 15)
 

@@ -1,0 +1,14 @@
+<launch>
+  <include file="$(find jsk_2014w_rinko)/launch/psmove.launch">
+    <arg name="use_oculus" value="false" />
+    <arg name="base_frame_id" value="map" />
+    <arg name="debug" value="true" />
+  </include>
+  <node name="map_tf_publisher"
+        pkg="tf" type="static_transform_publisher"
+        args="0 0 0 0 0 0 /map /camera_link 100"/>
+  <node name="rviz"
+        pkg="rviz" type="rviz"
+        args="-d $(find jsk_2014w_rinko)/cfg/psmove_test_config.rviz" />
+</launch>
+
