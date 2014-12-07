@@ -3,6 +3,7 @@
   <include file="$(find jsk_data)/launch/pr2_record.launch">
     <arg name="other_topics" value="/gaze"/>
     <arg name="other_options" value=""/>
+    <arg name="save_dir" value="/removable/furushchev/" />
 
     <!-- for PR2 -->
     <arg name="save_openni" value="true" />
@@ -13,7 +14,7 @@
     <arg name="save_pressure" value="true" />
     <arg name="save_gripper_command" default="true" />
     <arg name="camera_namespace" value="openni_c2"/>
-    <arg name="save_dir" value="/removable/bagfile/"/>
+    <!-- <arg name="save_dir" value="/removable/bagfile/"/> -->
   </include>
 
 </launch>
