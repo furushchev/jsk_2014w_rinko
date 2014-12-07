@@ -28,33 +28,9 @@
       (send *pr2* :head :neck-p :joint-angle (rad2deg diff-p))
       (send *pr2* :head :neck-y :joint-angle (rad2deg diff-y))
       (send *ri* :head-angle-vector (send *pr2* :angle-vector) 700))))
-#|
-(defun on-spin-old ()
-  (let ((map->oculus (send *tfl* :lookup-transform "/base_footprint" "/oculus" (ros::time 0)))
-        head-v
-        diff-time
-        base_footprint->torso_lift_link)
-    (when (and map->oculus (not *initial-pose*))
-      (format t "map->oculus: ~A~%" map->oculus)
-      (setq *initial-pose* map->oculus)
-      (setq *prev-time* (ros::time-now)))
-    (when (and map->oculus *initial-pose*)
-      (setq head-v (send (send *initial-pose* :copy-worldcoords) :transformation map->oculus))
-      (format t "map->oculus: ~A~%" map->oculus)
-      (format t "diff: ~A~%" head-v)
-      (send head-v :locate #f(1000 0 0))
-;;      (setq torso_lift_link->view_target (send *tfl* :transform-pose "torso_lift_link"  head-v))
-;;      (setq base_footprint->torso_lift_link (send *tfl* :lookup-transform "/base_footprint" "/torso_lift_link" (ros::time 0)))
-      (if (not base_footprint->torso_lift_link) (setq base_footprint->torso_lift_link (make-coords :pos #f(0 0 1300))))
-      (format t "base->torso: ~A~%" base_footprint->torso_lift_link)
-      (send head-v :translate (send base_footprint->torso_lift_link :pos) :world)
-      (send *tfb* :send-transform (send head-v :worldcoords) "/base_footprint" "/oculus_view_target")
-      (setq diff-time (ros::time- (ros::time-now) *prev-time*))
-      (setq *prev-time* (ros::time-now))
-      (send *pr2* :head :look-at (send head-v :worldpos))
-      (send *ri* :head-angle-vector (send *pr2* :angle-vector) 200)
-      (format t "head-v: ~A~%" (send head-v :worldcoords)))))
-|#
+
+(ros::advertise-service "/reset_oculus_orientation" std_srvs::Empty #'(lambda (srv)
+                                                                        (setq *initial-pose* nil)))
 
 (ros::rate 10)
 

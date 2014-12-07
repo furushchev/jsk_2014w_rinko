@@ -1,8 +1,9 @@
 <launch>
+  <arg name="debug" default="true" />
   <include file="$(find jsk_2014w_rinko)/launch/psmove.launch">
     <arg name="use_oculus" value="false" />
     <arg name="base_frame_id" value="map" />
-    <arg name="debug" value="true" />
+    <arg name="debug" value="$(arg debug)" />
   </include>
   <node name="map_tf_publisher"
         pkg="tf" type="static_transform_publisher"
