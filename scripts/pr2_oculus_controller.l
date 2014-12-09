@@ -27,12 +27,14 @@
       (format t "diff-p: ~A, diff-y: ~A~%" diff-p diff-y)
       (send *pr2* :head :neck-p :joint-angle (rad2deg diff-p))
       (send *pr2* :head :neck-y :joint-angle (rad2deg diff-y))
-      (send *ri* :head-angle-vector (send *pr2* :angle-vector) 700))))
+      (send *ri* :head-angle-vector (send *pr2* :angle-vector) 700))
+    ))
 
-(ros::advertise-service "/reset_oculus_orientation" std_srvs::Empty #'(lambda (srv)
-                                                                        (setq *initial-pose* nil)))
+(ros::advertise-service "/reset_oculus_orientation" std_srvs::Empty #'(lambda ()
+                                                                        (setq *initial-pose* nil)
+                                                                        (instance std_srvs::EmptyResponse :init)))
 
-(ros::rate 10)
+(ros::rate 30)
 
 (while (ros::ok)
   (ros::spin-once)
