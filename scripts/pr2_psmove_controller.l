@@ -46,7 +46,7 @@
             :pos (ros::point->float-vector (send msg :pose :position))
             :rot (ros::quaternion->matrix (send msg :pose :orientation))))
         (base->arm (send *tfl* :lookup-transform *base-frame-id* "/torso_lift_link" (ros::time 0)))
-        (diff-c (arrow))
+        (diff-c (make-cube 40 40 40))
         (av-time 500)
         marker-msg)
 
@@ -62,13 +62,14 @@
     (send diff-c :translate (send c :pos) :world)
     (send diff-c :translate (float-vector 0 *y-offset* 0) :world)
     (send diff-c :rotate (deg2rad *rot-val*) :z)
-    (setq marker-msg (object->marker-msg
+    (setq marker-msg (cube->marker-msg
                       diff-c
                       (instance std_msgs::header :init
                                 :stamp (send msg :header :stamp)
                                 :frame_id *base-frame-id*)
-                      :lifetime 300))
-    (send marker-msg :pose (ros::coords->tf-pose diff-c))
+                      :lifetime 300
+                      :color (float-vector 0.0 1.0 0.0)))
+;;    (send marker-msg :pose (ros::coords->tf-pose diff-c))
     (ros::publish *psmove-marker-topic* marker-msg)
     (when *move*
       (send *pr2* *use-arm* :inverse-kinematics diff-c
@@ -115,7 +116,7 @@
 
 (ros::subscribe *psmove-topic* geometry_msgs::PoseStamped #'p-cb)
 (ros::subscribe *psmove-button-topic* jsk_2014w_rinko::PSMoveButton #'b-cb)
-(ros::advertise *psmove-marker-topic* geometry_msgs::PoseStamped 1)
+(ros::advertise *psmove-marker-topic* visualization_msgs::Marker 1)
 
 (ros::rate 30)
 (ros::spin)
