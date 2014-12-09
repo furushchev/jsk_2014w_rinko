@@ -3,5 +3,6 @@
     <arg name="use_arm" value=":larm" />
     <arg name="y_offset" value="0.0" />
     <arg name="ns" value="/left" />
+    <arg name="image" value="/left/camera/rgb/image_rect_color" />
   </include>
 </launch>

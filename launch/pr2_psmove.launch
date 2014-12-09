@@ -13,7 +13,7 @@
 
   <group ns="$(arg ns)">
     <node name="psmove_tracker"
-	  pkg="jsk_2014w_rinko" type="psmove_tracker">
+          pkg="jsk_2014w_rinko" type="psmove_tracker">
       <remap from="image" to="$(arg image)" />
       <remap from="psmove" to="psmove_unfiltered" if="$(arg use_kalman_filter)" />
       <param name="debug" value="$(arg debug)" />
@@ -29,21 +29,21 @@
     </node>
 
     <node name="psmove_kalman_filter"
-	  pkg="jsk_2014w_rinko" type="linear_3d_kalman_filter"
-	  if="$(arg use_kalman_filter)">
+          pkg="jsk_2014w_rinko" type="linear_3d_kalman_filter"
+          if="$(arg use_kalman_filter)">
       <remap from="pose" to="psmove_unfiltered" />
       <remap from="pose_filtered" to="psmove" />
     </node>
 
     <node name="usb_cam"
-	  pkg="usb_cam" type="usb_cam_node"
-	  if="$(arg launch_usbcam)" />
+          pkg="usb_cam" type="usb_cam_node"
+          if="$(arg launch_usbcam)" />
     <include file="$(find openni_launch)/launch/openni.launch"
-	     if="$(arg launch_openni)">
+             if="$(arg launch_openni)">
       <arg name="camera" value="$(arg camera)" />
     </include>
-    <include file="$(find creative_gesture_launch)/launch/creative.launch" 
-	     if="$(arg launch_creative)" />
+    <include file="$(find creative_gesture_launch)/launch/creative.launch"
+             if="$(arg launch_creative)" />
   </group>
 
   <node name="pr2_psmove_controller"
