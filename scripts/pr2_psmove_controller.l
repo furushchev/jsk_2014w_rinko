@@ -25,6 +25,9 @@
 (setq *use-arm-av* (read-from-string (concatenate string arm-string "-angle-vector")))
 (setq *y-offset* (* (ros::get-param "~y_offset" 0.0f) 1000))
 (setq *ns* (ros::get-param "~ns" ""))
+(setq *psmove-topic* (concatenate string *ns* "/psmove"))
+(setq *psmove-button-topic* (concatenate string *ns* "/psmove_button"))
+(setq *psmove-marker-topic* (concatenate string *ns* "/psmove_marker"))
 
 (defun ros::point->float-vector (point)
   (float-vector (* (send point :x) 1000.0 *multiplier*)
@@ -58,7 +61,7 @@
     (send diff-c :translate (send c :pos) :world)
     (send diff-c :translate (float-vector 0 *y-offset* 0) :world)
     (send diff-c :rotate (deg2rad *rot-val*) :z)
-    (ros::publish "/psmove_marker" (instance geometry_msgs::PoseStamped :init
+    (ros::publish *psmove-marker-topic* (instance geometry_msgs::PoseStamped :init
                                              :header (instance std_msgs::header :init
                                                                :stamp (ros::time-now)
                                                                :frame_id *base-frame-id*)
@@ -106,9 +109,9 @@
       (setq *reverse* (* -1 *reverse*)))
 ))
 
-(ros::subscribe (concatenate string *ns* "/psmove") geometry_msgs::PoseStamped #'p-cb)
-(ros::subscribe (concatenate string *ns* "/psmove_button") jsk_2014w_rinko::PSMoveButton #'b-cb)
-(ros::advertise (concatenate string *ns* "/psmove_marker") geometry_msgs::PoseStamped 1)
+(ros::subscribe *psmove-topic* geometry_msgs::PoseStamped #'p-cb)
+(ros::subscribe *psmove-button-topic* jsk_2014w_rinko::PSMoveButton #'b-cb)
+(ros::advertise *psmove-marker-topic* geometry_msgs::PoseStamped 1)
 
 (ros::rate 30)
 (ros::spin)
