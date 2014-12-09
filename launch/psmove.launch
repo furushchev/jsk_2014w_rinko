@@ -1,13 +1,16 @@
 <launch>
-  <arg name="use_oculus" default="false" />
+  <arg name="use_oculus" default="true" />
   <arg name="use_psmove" default="true" />
+  <arg name="y_offset" default="0" />
+  <arg name="use_arm" default=":larm" />
   <arg name="use_kalman_filter" default="true" />
   <arg name="launch_rviz" default="true" />
   <arg name="launch_usbcam" default="false" />
   <arg name="launch_openni" default="true" />
+  <arg name="camera" default="camera" />
   <arg name="image" default="/camera/rgb/image_rect_color" />
   <arg name="base_frame_id" default="/base_footprint" />
-  <arg name="debug" default="false" />
+  <arg name="debug" default="true" />
 
 
   <group if="$(arg use_psmove)">
@@ -40,7 +43,9 @@
           pkg="usb_cam" type="usb_cam_node"
           if="$(arg launch_usbcam)" />
     <include file="$(find openni_launch)/launch/openni.launch"
-             if="$(arg launch_openni)" />
+             if="$(arg launch_openni)">
+      <arg name="camera" value="$(arg camera)" />
+    </include>
 
     <node name="pr2_psmove_controller"
           pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l"
@@ -48,6 +53,8 @@
       <param name="multiplier" value="1.5" />
       <param name="z_far" value="1.5" />
       <param name="base_frame_id" value="$(arg base_frame_id)" />
+      <param name="use_arm" value="$(arg use_arm)" />
+      <param name="y_offset" value="$(arg y_offset)" />
     </node>
   </group>
 

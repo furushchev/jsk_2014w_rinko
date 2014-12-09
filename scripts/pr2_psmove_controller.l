@@ -20,6 +20,10 @@
 (setq *multiplier* (ros::get-param "~multiplier" 1.0f))
 (setq *base-frame-id* (ros::get-param "~base_frame_id" "/base_footprint"))
 (setq *z-far* (ros::get-param "~z_far" 1.2f))
+(setq arm-string (ros::get-param "~use_arm" ":larm"))
+(setq *use-arm* (read-from-string arm-string))
+(setq *use-arm-av* (read-from-string (concatenate string arm-string "-angle-vector")))
+(setq *y-offset* (* (ros::get-param "~y_offset" 0.0f) 1000))
 
 (defun ros::point->float-vector (point)
   (float-vector (* (send point :x) 1000.0 *multiplier*)
@@ -32,8 +36,6 @@
                  (send quaternion :x)
                  (send quaternion :y) 
                  (send quaternion :z))))
-
-
 
 (defun p-cb (msg)
   (let ((c (make-coords
@@ -50,57 +52,62 @@
       (setq av-time 3000)
       (setq *initial-move* nil))
 
-;;    (send diff-c :transform (send (send *initial-pose* :copy-worldcoords) :transformation c))
     (send diff-c :translate (send base->arm :pos) :world)
     (send diff-c :translate (float-vector (* *z-far* 1000) 0 0) :world)
     (send diff-c :translate (send c :pos) :world)
+    (send diff-c :translate (float-vector 0 *y-offset* 0) :world)
     (send diff-c :rotate (deg2rad *rot-val*) :z)
-;;    (send diff-c :rotate (send c :rot) :world)
-;;    (ros::ros-info "psmove: ~A" c)
-;;    (ros::ros-info "base->arm: ~A" (send base->arm :pos))
-;;    (ros::ros-info "diff-c: ~A" diff-c)
     (ros::publish "/psmove_marker" (instance geometry_msgs::PoseStamped :init
                                              :header (instance std_msgs::header :init
                                                                :stamp (ros::time-now)
                                                                :frame_id *base-frame-id*)
                                              :pose (ros::coords->tf-pose diff-c)))
     (when *move*
-      (send *pr2* :larm :inverse-kinematics diff-c
+      (send *pr2* *use-arm* :inverse-kinematics diff-c
             :rotation-axis :x
             :stop 10)
-      (send *ri* :larm-angle-vector (send *pr2* :angle-vector) av-time)
-;;      (send *ri* :wait-interpolation))
+      (send *ri* *use-arm-av* (send *pr2* :angle-vector) av-time)
       )
     ))
 
+(defun trigger-on ()
+  (setq *move* t)
+  (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
+  (setq *initial-move* t))
+
+(defun trigger-off ()
+  (setq *move* nil))
+
+(setq *trigger-on* nil)
+(setq *reverse* 1)
 (defun b-cb (msg)
   (let ((b-str (send msg :button))
         (trig (send msg :trigger)))
     (when (> trig 0.5)
-        (setq *move* t)
-        (send *pr2* :angle-vector (send *ri* :state :potentio-vector))
-        )
+      (when (not *trigger-on*)
+        (trigger-on)
+        (setq *trigger-on* t)))
     (when (< trig 0.5)
-      (setq *initial-move* nil)
-      (setq *move* nil))
+      (when *trigger-on*
+        (setq *trigger-on* nil)
+        (trigger-off)))
     (when (substringp "t" b-str)
-      (send *ri* :start-grasp :larm))
+      (send *ri* :start-grasp *use-arm*))
     (when (substringp "c" b-str)
-      (send *ri* :stop-grasp :larm))
+      (send *ri* :stop-grasp *use-arm*))
     (when (substringp "x" b-str)
-      (send *pr2* :larm :wrist-r :joint-angle (+ (send *pr2* :larm :wrist-r :joint-angle)
-                                                 50))
-      (send *ri* :larm-angle-vector (send *pr2* :angle-vector) 500))
+      (send *pr2* *use-arm* :wrist-r :joint-angle (+ (send *pr2* *use-arm* :wrist-r :joint-angle)
+                                                     (* *reverse* 30)))
+      (send *ri* *use-arm-av* (send *pr2* :angle-vector) 500))
     (when (substringp "s" b-str)
-      (setq *rot-val* (- *rot-val* 15)))
+      (setq *rot-val* (+ *rot-val* (* *reverse* 15))))
+    (when (substringp "m" b-str)
+      (setq *reverse* (* -1 *reverse*)))
 ))
 
 (ros::subscribe "/psmove" geometry_msgs::PoseStamped #'p-cb)
 (ros::subscribe "/psmove_button" jsk_2014w_rinko::PSMoveButton #'b-cb)
 (ros::advertise "/psmove_marker" geometry_msgs::PoseStamped 1)
 
-(ros::rate 15)
-
-(while (ros::ok)
-  (ros::spin-once)
-  (ros::sleep))
+(ros::rate 30)
+(ros::spin)

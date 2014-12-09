@@ -154,6 +154,9 @@ class PSMoveTracker {
 
   std::string base_frame_id_;
 
+  bool mirror_;
+  int mirror_val_;
+
   bool debug_;
 
 public:
@@ -188,6 +191,10 @@ public:
     nh_.param<double>("z_far", z_far_, 1000.);
 
     nh_.param<std::string>("base_frame_id", base_frame_id_, "base_footprint");
+
+    nh_.param<bool>("mirror", mirror_, true);
+    if (mirror_) mirror_val_ = -1;
+    else mirror_val_ = 1;
 
     nh_.param<bool>("debug", debug_, false);
 
@@ -295,7 +302,7 @@ public:
     geometry_msgs::PoseStamped pose;
     pose.header.stamp = ros::Time::now();
     pose.header.frame_id = base_frame_id_;
-    pose.pose.position.x = pos.z * -intensity;
+    pose.pose.position.x = pos.z * intensity * mirror_val_;
     pose.pose.position.y = pos.x * intensity;
     pose.pose.position.z = pos.y * intensity;
     if(has_orientation){

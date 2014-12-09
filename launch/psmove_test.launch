@@ -1,10 +1,26 @@
 <launch>
   <arg name="debug" default="true" />
+  <arg name="both_arm" default="false" />
+  <arg name="use_arm" default=":larm" />
+  <arg name="use_arm_2" default=":rarm" />
+
   <include file="$(find jsk_2014w_rinko)/launch/psmove.launch">
     <arg name="use_oculus" value="false" />
     <arg name="base_frame_id" value="map" />
     <arg name="debug" value="$(arg debug)" />
+    <arg name="use_arm" value="$(arg use_arm)" />
   </include>
+
+  <include file="$(find jsk_2014w_rinko)/launch/psmove.launch"
+           if="$(arg both_arm)">
+    <arg name="use_oculus" value="false" />
+    <arg name="base_frame_id" value="map" />
+    <arg name="debug" value="$(arg debug)" />
+    <arg name="use_arm" value="$(arg use_arm_2)" />
+    <arg name="camera" value="camera_r" />
+    <arg name="image" value="/camera_r/rgb/image_rect_color" />
+  </include>
+
   <node name="map_tf_publisher"
         pkg="tf" type="static_transform_publisher"
         args="0 0 0 0 0 0 /map /camera_link 100"/>
