@@ -1,0 +1,9 @@
+<launch>
+  <arg name="launch_rviz" default="true" />
+
+  <node name="rviz" pkg="rviz" type="rviz"
+        args="-d $(find jsk_2014w_rinko)/cfg/oculus_rviz_config.rviz"
+        if="$(arg launch_rviz)" />
+  <node name="pr2_oculus_controller"
+        pkg="jsk_2014w_rinko" type="pr2_oculus_controller.l" />
+</launch>
