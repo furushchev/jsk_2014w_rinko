@@ -4,6 +4,7 @@
   <arg name="use_kalman_filter" default="true" />
   <arg name="launch_usbcam" default="false" />
   <arg name="launch_openni" default="true" />
+  <arg name="launch_creative" default="false" />
   <arg name="camera" default="camera" />
   <arg name="image" default="/camera/rgb/image_rect_color" />
   <arg name="base_frame_id" default="/base_footprint" />
@@ -39,6 +40,8 @@
            if="$(arg launch_openni)">
     <arg name="camera" value="$(arg camera)" />
   </include>
+  <include file="$(find creative_gesture_launch)/launch/creative.launch" 
+	   if="$(arg launch_creative)" />
 
   <node name="pr2_psmove_controller"
         pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l">

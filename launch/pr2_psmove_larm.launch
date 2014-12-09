@@ -1,8 +1,7 @@
 <launch>
-  <group ns="left">
-    <include file="$(find jsk_2014w_rinko)/launch/pr2_psmove.launch">
-      <arg name="use_arm" value=":larm" />
-      <arg name="y_offset" value="0.0" />
-    </include>
-  </group>
+  <include file="$(find jsk_2014w_rinko)/launch/pr2_psmove.launch">
+    <arg name="use_arm" value=":larm" />
+    <arg name="y_offset" value="0.0" />
+    <arg name="ns" value="/left" />
+  </include>
 </launch>
