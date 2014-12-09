@@ -46,8 +46,9 @@
             :pos (ros::point->float-vector (send msg :pose :position))
             :rot (ros::quaternion->matrix (send msg :pose :orientation))))
         (base->arm (send *tfl* :lookup-transform *base-frame-id* "/torso_lift_link" (ros::time 0)))
-        (diff-c (make-cube 40 40 40))
-        (av-time 500))
+        (diff-c (arrow))
+        (av-time 500)
+        marker-msg)
 
     (if (not base->arm)
         (setq base->arm (make-coords :pos (float-vector 0 0 1300))))
@@ -61,11 +62,14 @@
     (send diff-c :translate (send c :pos) :world)
     (send diff-c :translate (float-vector 0 *y-offset* 0) :world)
     (send diff-c :rotate (deg2rad *rot-val*) :z)
-    (ros::publish *psmove-marker-topic* (instance geometry_msgs::PoseStamped :init
-                                             :header (instance std_msgs::header :init
-                                                               :stamp (ros::time-now)
-                                                               :frame_id *base-frame-id*)
-                                             :pose (ros::coords->tf-pose diff-c)))
+    (setq marker-msg (object->marker-msg
+                      diff-c
+                      (instance std_msgs::header :init
+                                :stamp (send msg :header :stamp)
+                                :frame_id *base-frame-id*)
+                      :lifetime 300))
+    (send marker-msg :pose (ros::coords->tf-pose diff-c))
+    (ros::publish *psmove-marker-topic* marker-msg)
     (when *move*
       (send *pr2* *use-arm* :inverse-kinematics diff-c
             :rotation-axis :x
