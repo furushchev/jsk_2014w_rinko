@@ -46,7 +46,7 @@
              if="$(arg launch_creative)" />
   </group>
 
-  <node name="pr2_psmove_controller"
+  <node name="$(anon pr2_psmove_controller)"
         pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l">
     <remap from="psmove_button" to="psmove_button" />
     <remap from="psmove_marker" to="psmove_marker" />
