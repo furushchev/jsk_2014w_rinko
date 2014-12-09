@@ -1,7 +1,8 @@
 <launch>
   <include file="$(find jsk_2014w_rinko)/launch/pr2_psmove.launch">
     <arg name="use_arm" value=":rarm" />
-    <arg name="y_offset" value="0.6" />
+    <arg name="y_offset" value="-0.4" />
+    <arg name="z_far" value="1.2" />
     <arg name="launch_openni" value="false" />
     <arg name="launch_creative" value="true" />
     <arg name="camera" value="creative_gesture" />

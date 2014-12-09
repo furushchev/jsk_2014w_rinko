@@ -1,5 +1,6 @@
 <launch>
   <arg name="y_offset" default="0" />
+  <arg name="z_far" default="1.5" />
   <arg name="use_arm" default=":larm" />
   <arg name="use_kalman_filter" default="true" />
   <arg name="launch_usbcam" default="false" />
@@ -47,11 +48,12 @@
   </group>
 
   <node name="$(anon pr2_psmove_controller)"
-        pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l">
+        pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l"
+	output="screen">
     <remap from="psmove_button" to="psmove_button" />
     <remap from="psmove_marker" to="psmove_marker" />
     <param name="multiplier" value="1.5" />
-    <param name="z_far" value="1.5" />
+    <param name="z_far" value="$(arg z_far)" />
     <param name="base_frame_id" value="$(arg base_frame_id)" />
     <param name="use_arm" value="$(arg use_arm)" />
     <param name="y_offset" value="$(arg y_offset)" />
