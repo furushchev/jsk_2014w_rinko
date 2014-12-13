@@ -195,15 +195,17 @@ public:
     nh_.param<bool>("x_mirror", x_mirror_, true);
     if (x_mirror_) x_mirror_val_ = -1;
     else x_mirror_val_ = 1;
+    if (x_mirror_) ROS_INFO_STREAM("X MIRRORED");
 
     nh_.param<bool>("y_mirror", y_mirror_, true);
     if (y_mirror_) y_mirror_val_ = -1;
     else y_mirror_val_ = 1;
+    if (y_mirror_) ROS_INFO_STREAM("Y MIRRORED");
 
     nh_.param<bool>("z_mirror", z_mirror_, true);
     if (z_mirror_) z_mirror_val_ = -1;
     else z_mirror_val_ = 1;
-
+    if (z_mirror_) ROS_INFO_STREAM("Z MIRRORED");
 
     nh_.param<bool>("debug", debug_, false);
 
