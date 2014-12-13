@@ -8,9 +8,9 @@
   <arg name="launch_creative" default="false" />
   <arg name="camera" default="camera" />
   <arg name="image" default="/camera/rgb/image_rect_color" />
-  <arg name="base_frame_id" default="/base_footprint" />
+  <arg name="base_frame_id" default="/camera_link" />
   <arg name="debug" default="true" />
-  <arg name="ns" default="" />
+  <arg name="ns" default="psmove" />
 
   <group ns="$(arg ns)">
     <node name="psmove_tracker"
@@ -20,13 +20,14 @@
       <param name="debug" value="$(arg debug)" />
       <param name="color_r" value="255" />
       <param name="color_b" value="255" />
-      <param name="color_threshold" value="5" />
+      <param name="color_threshold" value="20" />
       <param name="lpf_threshold" value="3" />
       <param name="canny_threshold" value="200" />
-      <param name="center_detection_threshold" value="120" />
-      <param name="min_radius" value="3" />
-      <param name="max_radius" value="140" />
+      <param name="center_detection_threshold" value="50" />
+      <param name="min_radius" value="1" />
+      <param name="max_radius" value="55" />
       <param name="base_frame_id" value="$(arg base_frame_id)" />
+      <param name="mirror" value="true" />
     </node>
 
     <node name="psmove_kalman_filter"
@@ -35,28 +36,5 @@
       <remap from="pose" to="psmove_unfiltered" />
       <remap from="pose_filtered" to="psmove" />
     </node>
-
-    <node name="usb_cam"
-          pkg="usb_cam" type="usb_cam_node"
-          if="$(arg launch_usbcam)" />
-    <include file="$(find openni_launch)/launch/openni.launch"
-             if="$(arg launch_openni)">
-      <arg name="camera" value="$(arg camera)" />
-    </include>
-    <include file="$(find creative_gesture_launch)/launch/creative.launch"
-             if="$(arg launch_creative)" />
   </group>
-
-  <node name="$(anon pr2_psmove_controller)"
-        pkg="jsk_2014w_rinko" type="pr2_psmove_controller.l"
-	output="screen">
-    <remap from="psmove_button" to="psmove_button" />
-    <remap from="psmove_marker" to="psmove_marker" />
-    <param name="multiplier" value="1.5" />
-    <param name="z_far" value="$(arg z_far)" />
-    <param name="base_frame_id" value="$(arg base_frame_id)" />
-    <param name="use_arm" value="$(arg use_arm)" />
-    <param name="y_offset" value="$(arg y_offset)" />
-    <param name="ns" value="$(arg ns)" />
-  </node>
 </launch>

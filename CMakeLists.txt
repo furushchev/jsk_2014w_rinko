@@ -23,10 +23,10 @@ find_package(
 )
 pkg_check_modules(PC_PSMOVEAPI REQUIED psmoveapi)
 set(PSMOVEAPI_DEFINITIONS ${PC_PSMOVEAPI_CFLAGS_OTHER})
-find_path(PSMOVEAPI_INCLUDE_DIR psmove.h psmove_config.h psmove_fusion.h psmove_tracker.h
+find_path(PSMOVEAPI_INCLUDE_DIR psmove.h psmove_config.h
   HINTS ${PC_PSMOVEAPI_INCLUDEDIR} ${PC_PSMOVEAPI_INCLUDE_DIRS}
   PATH_SUFFIXES psmoveapi)
-find_library(PSMOVEAPI_LIBRARY NAMES psmoveapi psmoveapi_tracker
+find_library(PSMOVEAPI_LIBRARY NAMES psmoveapi
   HINTS ${PC_PSMOVEAPI_LIBDIR} ${PC_PSMOVEAPI_LIBRARY_DIRS})
 set(PSMOVEAPI_LIBRARIES ${PSMOVEAPI_LIBRARY})
 set(PSMOVEAPI_INCLUDE_DIRS ${PSMOVEAPI_INCLUDE_DIR})
@@ -63,7 +63,6 @@ include_directories(
 # )
 
 ## Declare a cpp executable
-add_executable(psmove_driver src/psmove_driver.cpp)
 add_executable(psmove_tracker src/psmove_tracker.cpp)
 add_executable(linear_2d_kalman_filter src/linear_2d_kalman_filter.cpp)
 add_executable(linear_3d_kalman_filter src/linear_3d_kalman_filter.cpp)
@@ -73,17 +72,10 @@ add_executable(linear_3d_kalman_filter src/linear_3d_kalman_filter.cpp)
 # add_dependencies(2014w_rinko_node 2014w_rinko_generate_messages_cpp)
 message("hogehoge"${PSMOVEAPI_LIBRARIES})
 ## Specify libraries to link a library or executable target against
-target_link_libraries(psmove_driver
-  ${catkin_LIBRARIES}
-  ${PSMOVEAPI_LIBRARIES}
-  /usr/lib/x86_64-linux-gnu/libpsmoveapi_tracker.so
-  ${OpenCV_LIBRARIES}
-)
 
 target_link_libraries(psmove_tracker
   ${catkin_LIBRARIES}
   ${PSMOVEAPI_LIBRARIES}
-  /usr/lib/x86_64-linux-gnu/libpsmoveapi_tracker.so
   ${OpenCV_LIBRARIES}
   /usr/lib
 )
