@@ -154,8 +154,8 @@ class PSMoveTracker {
 
   std::string base_frame_id_;
 
-  bool mirror_;
-  int mirror_val_;
+  bool x_mirror_, y_mirror_, z_mirror_;
+  int x_mirror_val_, y_mirror_val_, z_mirror_val_;
 
   bool debug_;
 
@@ -192,9 +192,18 @@ public:
 
     nh_.param<std::string>("base_frame_id", base_frame_id_, "base_footprint");
 
-    nh_.param<bool>("mirror", mirror_, true);
-    if (mirror_) mirror_val_ = -1;
-    else mirror_val_ = 1;
+    nh_.param<bool>("x_mirror", x_mirror_, true);
+    if (x_mirror_) x_mirror_val_ = -1;
+    else x_mirror_val_ = 1;
+
+    nh_.param<bool>("y_mirror", y_mirror_, true);
+    if (y_mirror_) y_mirror_val_ = -1;
+    else y_mirror_val_ = 1;
+
+    nh_.param<bool>("z_mirror", z_mirror_, true);
+    if (z_mirror_) z_mirror_val_ = -1;
+    else z_mirror_val_ = 1;
+
 
     nh_.param<bool>("debug", debug_, false);
 
@@ -302,9 +311,9 @@ public:
     geometry_msgs::PoseStamped pose;
     pose.header.stamp = ros::Time::now();
     pose.header.frame_id = base_frame_id_;
-    pose.pose.position.x = pos.z * intensity * mirror_val_;
-    pose.pose.position.y = pos.x * intensity;
-    pose.pose.position.z = pos.y * intensity;
+    pose.pose.position.x = pos.z * intensity * x_mirror_val_;
+    pose.pose.position.y = pos.x * intensity * y_mirror_val_;
+    pose.pose.position.z = pos.y * intensity * z_mirror_val_;
     if(has_orientation){
       pose.pose.orientation.x = qx;
       pose.pose.orientation.y = qy;

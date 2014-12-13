@@ -27,7 +27,9 @@
       <param name="min_radius" value="1" />
       <param name="max_radius" value="55" />
       <param name="base_frame_id" value="$(arg base_frame_id)" />
-      <param name="mirror" value="true" />
+      <param name="x_mirror" value="false" />
+      <param name="y_mirror" value="true" />
+      <param name="z_mirror" value="true" />
     </node>
 
     <node name="psmove_kalman_filter"
